@@ -1,4 +1,5 @@
 const clothingSchema = require("../models/clothingItems");
+const { handleError, NotFoundError } = require("../utils/errors");
 
 const getItems = (req, res) => {
   clothingSchema
@@ -8,7 +9,7 @@ const getItems = (req, res) => {
     })
     .catch((error) => {
       console.error(error);
-      return res.status(500).send({ message: "Internal Server Error" });
+      handleError(error, req, res);
     });
 };
 
@@ -17,7 +18,9 @@ const createItem = (req, res) => {
   console.log(req.user._id);
   const { name, weather, imageUrl } = req.body;
   if (!name || !weather || !imageUrl) {
-    return res.status(400).send({ message: "All fields are required" });
+    const error = new Error("All fields are required");
+    error.name = "ValidationError";
+    return handleError(error, req, res);
   }
 
   clothingSchema
@@ -27,16 +30,7 @@ const createItem = (req, res) => {
     })
     .catch((error) => {
       console.error(error);
-      if (error.name === "ValidationError") {
-        return res.status(400).send({ message: "Invalid data" });
-      } else if (error.name === "CastError") {
-        return res.status(400).send({ message: "Invalid owner ID" });
-      } else if (error.name === "MongoError" && error.code === 11000) {
-        return res.status(409).send({ message: "Item already exists" });
-      } else if (error.name === "TypeError") {
-        return res.status(400).send({ message: "Invalid data type" });
-      }
-      return res.status(500).send({ message: "Internal Server Error" });
+     handleError(error, req, res);
     });
 };
 
@@ -44,19 +38,14 @@ const deleteItem = (req, res) => {
   const { itemId } = req.params;
 
   clothingSchema
-    .deleteOne({ _id: itemId })
-    .then((result) => {
-      if (result.deletedCount === 0) {
-        return res.status(404).send({ message: "Item not found" });
-      }
-      res.status(200).send({ message: "Item deleted successfully" });
+    .findById(itemId)
+    .orFail(() => new NotFoundError('Item not found'))
+    .then(() => clothingSchema.deleteOne({ _id: itemId }))
+    .then(() => {
+      res.status(200).send({ message: 'Item deleted successfully' });
     })
     .catch((error) => {
-      console.error(error);
-      if (error.name === "CastError") {
-        return res.status(400).send({ message: "Invalid item ID" });
-      }
-      return res.status(500).send({ message: "Internal Server Error" });
+      handleError(error, req, res);
     });
 };
 
@@ -66,18 +55,13 @@ const likeItem = (req, res) => {
 
   clothingSchema
     .findByIdAndUpdate(itemId, { $addToSet: { likes: userId } }, { new: true })
+    .orFail()
     .then((item) => {
-      if (!item) {
-        return res.status(404).send({ message: "Item not found" });
-      }
       res.status(200).send(item);
     })
     .catch((error) => {
       console.error(error);
-      if (error.name === "CastError") {
-        return res.status(400).send({ message: "Invalid item ID" });
-      }
-      return res.status(500).send({ message: "Internal Server Error" });
+     handleError(error, req, res);
     });
 };
 
@@ -87,19 +71,13 @@ const deleteLike = (req, res) => {
 
   clothingSchema
     .findByIdAndUpdate(itemId, { $pull: { likes: userId } }, { new: true })
+    .orFail()
     .then((item) => {
-      if (!item) {
-        return res.status(404).send({ message: "Item not found" });
-      }
-
       res.status(200).send(item);
     })
     .catch((error) => {
       console.error(error);
-      if (error.name === "CastError") {
-        return res.status(400).send({ message: "Invalid item ID" });
-      }
-      return res.status(500).send({ message: "Internal Server Error" });
+      handleError(error, req, res);
     });
 };
 
