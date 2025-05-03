@@ -30,7 +30,7 @@ const createItem = (req, res) => {
     })
     .catch((error) => {
       console.error(error);
-     handleError(error, req, res);
+      handleError(error, req, res);
     });
 };
 
@@ -39,10 +39,10 @@ const deleteItem = (req, res) => {
 
   clothingSchema
     .findById(itemId)
-    .orFail(() => new NotFoundError('Item not found'))
+    .orFail(() => new NotFoundError("Item not found"))
     .then(() => clothingSchema.deleteOne({ _id: itemId }))
     .then(() => {
-      res.status(200).send({ message: 'Item deleted successfully' });
+      res.status(200).send({ message: "Item deleted successfully" });
     })
     .catch((error) => {
       handleError(error, req, res);
@@ -61,7 +61,7 @@ const likeItem = (req, res) => {
     })
     .catch((error) => {
       console.error(error);
-     handleError(error, req, res);
+      handleError(error, req, res);
     });
 };
 

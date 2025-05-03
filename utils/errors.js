@@ -19,7 +19,7 @@ class NotFoundError extends Error {
   constructor(message) {
     super(message);
     this.statusCode = 404;
-    this.name = 'NotFoundError';
+    this.name = "NotFoundError";
   }
 }
 
@@ -27,12 +27,12 @@ class ForbiddenError extends Error {
   constructor(message) {
     super(message);
     this.statusCode = 403;
-    this.name = 'ForbiddenError';
+    this.name = "ForbiddenError";
   }
 }
 
 module.exports = {
   handleError,
   NotFoundError,
-  ForbiddenError
+  ForbiddenError,
 };
