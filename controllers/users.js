@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const { handleError } = require("../utils/errors");
 
 const getUsers = (req, res) => {
   User.find({})
@@ -7,7 +8,7 @@ const getUsers = (req, res) => {
     })
     .catch((error) => {
       console.error(error);
-      return res.status(500).send("Internal Server Error");
+      handleError(error, req, res);
     });
 };
 
@@ -20,28 +21,20 @@ const createUser = (req, res) => {
     })
     .catch((error) => {
       console.error(error);
-      if (error.name === "ValidationError") {
-        return res.status(400).send({ message: "Invalid data" });
-      }
-      return res.status(500).send("Internal Server Error");
+      handleError(error, req, res);
     });
 };
 
 const getUser = (req, res) => {
   const { userId } = req.params;
   User.findById(userId)
+  .orFail()
     .then((user) => {
-      if (!user) {
-        return res.status(404).send({ message: "User not found" });
-      }
       res.status(200).send(user);
     })
     .catch((error) => {
       console.error(error);
-      if (error.name === "CastError") {
-        return res.status(400).send({ message: "Invalid user ID" });
-      }
-      return res.status(500).send({ message: "Internal Server Error" });
+      handleError(error, req, res);
     });
 };
 

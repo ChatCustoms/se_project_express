@@ -20,9 +20,9 @@ const createItem = (req, res) => {
   if (!name || !weather || !imageUrl) {
     const error = new Error("All fields are required");
     error.name = "ValidationError";
-    return handleError(error, req, res);
+    handleError(error, req, res);
   }
-
+  else {
   clothingSchema
     .create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => {
@@ -32,6 +32,7 @@ const createItem = (req, res) => {
       console.error(error);
       handleError(error, req, res);
     });
+  }
 };
 
 const deleteItem = (req, res) => {
