@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const mainRouter = require("./routes/index");
+const { handleError, NotFoundError } = require("./utils/errors");
 
 const app = express();
 
@@ -15,7 +16,7 @@ app.use((req, res, next) => {
 });
 app.use("/", mainRouter);
 app.use((req, res) => {
-  res.status(404).send({ message: "Requested resource not found" });
+  handleError(new NotFoundError("Page not found"), req, res);
 });
 
 mongoose
