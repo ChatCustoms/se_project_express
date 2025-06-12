@@ -1,5 +1,7 @@
 const User = require("../models/user");
 const { handleError } = require("../utils/errors");
+const JWT_SECRET = process.env.JWT_SECRET || "default-secret-key";
+const jwt = require("jsonwebtoken");
 
 const getUsers = (req, res) => {
   User.find({})
@@ -13,9 +15,9 @@ const getUsers = (req, res) => {
 };
 
 const createUser = (req, res) => {
-  const { name, avatar } = req.body;
+  const { name, avatar, email, password } = req.body;
 
-  User.create({ name, avatar })
+  User.create({ name, avatar, email, password })
     .then((user) => {
       res.status(201).send(user);
     })
@@ -28,7 +30,7 @@ const createUser = (req, res) => {
 const getUser = (req, res) => {
   const { userId } = req.params;
   User.findById(userId)
-  .orFail()
+    .orFail()
     .then((user) => {
       res.status(200).send(user);
     })
@@ -38,4 +40,19 @@ const getUser = (req, res) => {
     });
 };
 
-module.exports = { getUsers, createUser, getUser };
+const login = (req, res) => {
+  const { email, password } = req.body;
+  User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+        expiresIn: "7d",
+      });
+      res.status(200).send({ token: token });
+    })
+    .catch((error) => {
+      console.error(error);
+      handleError(error, req, res);
+    });
+};
+
+module.exports = { getUsers, createUser, getUser, login };

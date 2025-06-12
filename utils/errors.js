@@ -11,6 +11,9 @@ const handleError = (err, req, res) => {
   if (err.name === "DocumentNotFoundError" || err.statusCode === STATUS_CODES.FORBIDDEN_REQUEST) {
     return res.status(STATUS_CODES.FORBIDDEN_REQUEST).send({ message: err.message || "Item not found" });
   }
+  if (err.name === "MongoServerError" && err.code === 11000) {
+    return res.status(STATUS_CODES.CONFLICT).send({ message: "Conflict: Duplicate key error" });
+  }
   if (err.statusCode === STATUS_CODES.FORBIDDEN) {
     return res.status(STATUS_CODES.FORBIDDEN).send({ message: err.message || "Forbidden" });
   }

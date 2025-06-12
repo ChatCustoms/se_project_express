@@ -2,18 +2,15 @@ const express = require("express");
 const mongoose = require("mongoose");
 const mainRouter = require("./routes/index");
 const { handleError, NotFoundError } = require("./utils/errors");
+const { sign } = require("jsonwebtoken");
+const { getItems } = require("./controllers/clothingItems");
+const auth = require("./middlewares/auth");
 
 const app = express();
 
 const { PORT = 3001 } = process.env;
 
 app.use(express.json());
-app.use((req, res, next) => {
-  req.user = {
-    _id: "68156ae9ed2a440e99d085bd", // paste the _id of the test user created in the previous step
-  };
-  next();
-});
 app.use("/", mainRouter);
 app.use((req, res) => {
   handleError(new NotFoundError("Page not found"), req, res);
