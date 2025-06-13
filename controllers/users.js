@@ -55,7 +55,7 @@ const updateUser = (req, res) => {
       console.error(error);
       handleError(error, req, res);
     });
-}
+};
 
 const login = (req, res) => {
   const { email, password } = req.body;

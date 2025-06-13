@@ -41,6 +41,14 @@ const deleteItem = (req, res) => {
   clothingSchema
     .findById(itemId)
     .orFail(() => new NotFoundError("Item not found"))
+    .then((item) => {
+      if (item.owner.toString() !== req.user._id.toString()) {
+        const error = new Error("You do not have permission to delete this item");
+        error.statusCode = 403; // Forbidden
+        throw error;
+      }
+      return item;
+    })
     .then(() => clothingSchema.deleteOne({ _id: itemId }))
     .then(() => {
       res.status(200).send({ message: "Item deleted successfully" });
