@@ -59,19 +59,23 @@ const updateUser = (req, res) => {
 
 const login = (req, res) => {
   const { email, password } = req.body;
+
+  // Validate email and password
+  if (!email || !password) {
+    return res.status(400).send({ message: "Email and password are required" });
+  }
+  // Find user by credentials
   User.findUserByCredentials(email, password)
-  User.findOne({ email })
-    .select("+password") // Include password in the query result
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
-        expiresIn: "7d",
-      });
-      res.status(200).send({ token: token });
+      // Generate JWT token
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: "7d" });
+      res.status(200).send({ token });
     })
     .catch((error) => {
       console.error(error);
       handleError(error, req, res);
     });
+
 };
 
 module.exports = { getUsers, createUser, getUser, updateUser, login };

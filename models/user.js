@@ -32,4 +32,20 @@ const userSchema = new mongoose.Schema({
   },
 });
 
+userSchema.statics.findUserByCredentials = function(email, password) {
+  return this.findOne({ email })
+    .select("+password") // Include password in the query
+    .then((user) => {
+      if (!user) {
+        throw new Error("Invalid email or password");
+      }
+      // Here you would typically compare the password with a hashed version
+      // For simplicity, we assume the password is stored in plain text
+      if (user.password !== password) {
+        throw new Error("Invalid email or password");
+      }
+      return user;
+    });
+}
+
 module.exports = mongoose.model("user", userSchema);
