@@ -41,15 +41,19 @@ const deleteItem = (req, res) => {
     .findById(itemId)
     .then((item) => {
       if (!item) {
-        throw new NotFoundError("Item not found");
+        return res.status(404).send({ message: "Item not found" });
       }
       if (item.owner.toString() !== req.user._id) {
-        return res.status(403).send({ message: "Forbidden: Not your item" }); // ✅
+        return res.status(403).send({ message: "Forbidden: Not your item" });
       }
-      return clothingSchema.findByIdAndRemove(itemId);
+      return clothingSchema.findByIdAndRemove(itemId).then((deleted) => {
+        res.send(deleted);
+      });
     })
-    .then((deletedItem) => res.send(deletedItem))
-    .catch((err) => handleError(err, req, res));
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send({ message: "Internal Server Error" });
+    });
 };
 
 const likeItem = (req, res) => {
