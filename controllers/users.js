@@ -21,7 +21,9 @@ const createUser = (req, res) => {
 
   User.create({ name, avatar, email, password: hashedPassword })
     .then((user) => {
-      res.status(201).send(user);
+      const userWithoutPassword = user.toObject();
+      delete userWithoutPassword.password; // Remove password from response
+      res.status(201).send(userWithoutPassword);
     })
     .catch((error) => {
       console.error(error);

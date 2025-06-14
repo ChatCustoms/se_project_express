@@ -33,6 +33,14 @@ const userSchema = new mongoose.Schema({
   },
 });
 
+userSchema.set("toJSON", {
+  transform: function (doc, ret) {
+    ret._id = ret._id.toString(); // Convert ObjectId to string
+    delete ret.password; // Exclude password from the response
+    return ret;
+  }
+});
+
 userSchema.statics.findUserByCredentials = async function (email, password) {
   try {
     const user = await this.findOne({ email }).select("+password");
