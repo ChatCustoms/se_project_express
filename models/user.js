@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
+const bcrypt = require("bcryptjs");
 
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true, minlength: 2, maxlength: 30 },
@@ -32,20 +33,20 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-userSchema.statics.findUserByCredentials = function(email, password) {
-  return this.findOne({ email })
-    .select("+password") // Include password in the query
-    .then((user) => {
-      if (!user) {
-        throw new Error("Invalid email or password");
-      }
-      // Here you would typically compare the password with a hashed version
-      // For simplicity, we assume the password is stored in plain text
-      if (user.password !== password) {
-        throw new Error("Invalid email or password");
-      }
-      return user;
-    });
-}
+userSchema.statics.findUserByCredentials = async function (email, password) {
+  try {
+    const user = await this.findOne({ email }).select("+password");
+    if (!user) {
+      throw new Error("Invalid email or password");
+    }
+    const matched = await bcrypt.compare(password, user.password);
+    if (!matched) {
+      throw new Error("Invalid email or password");
+    }
+    return user;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
 
 module.exports = mongoose.model("user", userSchema);

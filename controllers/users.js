@@ -2,6 +2,7 @@ const User = require("../models/user");
 const { handleError } = require("../utils/errors");
 const JWT_SECRET = process.env.JWT_SECRET || "default-secret-key";
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 
 const getUsers = (req, res) => {
   User.find({})
@@ -16,8 +17,9 @@ const getUsers = (req, res) => {
 
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
+  const hashedPassword = bcrypt.hashSync(password, 10);
 
-  User.create({ name, avatar, email, password })
+  User.create({ name, avatar, email, password: hashedPassword })
     .then((user) => {
       res.status(201).send(user);
     })
@@ -44,7 +46,11 @@ const updateUser = (req, res) => {
   const { name, avatar } = req.body;
   const userId = req.user._id;
 
-  User.findByIdAndUpdate(userId, { name, avatar }, { new: true, runValidators: true })
+  User.findByIdAndUpdate(
+    userId,
+    { name, avatar },
+    { new: true, runValidators: true }
+  )
     .orFail(() => {
       throw new Error("User not found");
     })
@@ -68,14 +74,15 @@ const login = (req, res) => {
   User.findUserByCredentials(email, password)
     .then((user) => {
       // Generate JWT token
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: "7d" });
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+        expiresIn: "7d",
+      });
       res.status(200).send({ token });
     })
     .catch((error) => {
       console.error(error);
       handleError(error, req, res);
     });
-
 };
 
 module.exports = { getUsers, createUser, getUser, updateUser, login };
