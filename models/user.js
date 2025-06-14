@@ -38,18 +38,22 @@ userSchema.set("toJSON", {
     ret._id = ret._id.toString(); // Convert ObjectId to string
     delete ret.password; // Exclude password from the response
     return ret;
-  }
+  },
 });
 
 userSchema.statics.findUserByCredentials = async function (email, password) {
   try {
     const user = await this.findOne({ email }).select("+password");
     if (!user) {
-      throw new Error("Invalid email or password");
+      const error = new Error("Invalid email or password");
+      error.statusCode = 401; // Unauthorized
+      throw error;
     }
     const matched = await bcrypt.compare(password, user.password);
     if (!matched) {
-      throw new Error("Invalid email or password");
+      const error = new Error("Invalid email or password");
+      error.statusCode = 401; // Unauthorized
+      throw error;
     }
     return user;
   } catch (error) {

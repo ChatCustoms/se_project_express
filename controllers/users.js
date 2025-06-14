@@ -26,6 +26,9 @@ const createUser = (req, res) => {
       res.status(201).send(userWithoutPassword);
     })
     .catch((error) => {
+      if (error.code === 11000) {
+        return res.status(409).send({ message: "Email already exists" });
+      }
       console.error(error);
       handleError(error, req, res);
     });
@@ -41,6 +44,20 @@ const getUser = (req, res) => {
     .catch((error) => {
       console.error(error);
       handleError(error, req, res);
+    });
+};
+
+const getCurrentUser = (req, res) => {
+  User.findById(req.user._id)
+    .then((user) => {
+      if (!user) {
+        return res.status(404).send({ message: "User not found" });
+      }
+      res.send(user);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send({ message: "Internal server error" });
     });
 };
 
@@ -87,4 +104,11 @@ const login = (req, res) => {
     });
 };
 
-module.exports = { getUsers, createUser, getUser, updateUser, login };
+module.exports = {
+  getUsers,
+  createUser,
+  getUser,
+  updateUser,
+  login,
+  getCurrentUser,
+};

@@ -21,17 +21,16 @@ const createItem = (req, res) => {
     const error = new Error("All fields are required");
     error.name = "ValidationError";
     handleError(error, req, res);
-  }
-  else {
-  clothingSchema
-    .create({ name, weather, imageUrl, owner: req.user._id })
-    .then((item) => {
-      res.status(201).send(item);
-    })
-    .catch((error) => {
-      console.error(error);
-      handleError(error, req, res);
-    });
+  } else {
+    clothingSchema
+      .create({ name, weather, imageUrl, owner: req.user._id })
+      .then((item) => {
+        res.status(201).send(item);
+      })
+      .catch((error) => {
+        console.error(error);
+        handleError(error, req, res);
+      });
   }
 };
 
@@ -40,22 +39,17 @@ const deleteItem = (req, res) => {
 
   clothingSchema
     .findById(itemId)
-    .orFail(() => new NotFoundError("Item not found"))
     .then((item) => {
-      if (item.owner.toString() !== req.user._id.toString()) {
-        const error = new Error("You do not have permission to delete this item");
-        error.statusCode = 403; // Forbidden
-        throw error;
+      if (!item) {
+        throw new NotFoundError("Item not found");
       }
-      return item;
+      if (item.owner.toString() !== req.user._id) {
+        return res.status(403).send({ message: "Forbidden: Not your item" }); // ✅
+      }
+      return clothingSchema.findByIdAndRemove(itemId);
     })
-    .then(() => clothingSchema.deleteOne({ _id: itemId }))
-    .then(() => {
-      res.status(200).send({ message: "Item deleted successfully" });
-    })
-    .catch((error) => {
-      handleError(error, req, res);
-    });
+    .then((deletedItem) => res.send(deletedItem))
+    .catch((err) => handleError(err, req, res));
 };
 
 const likeItem = (req, res) => {
