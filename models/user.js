@@ -55,9 +55,20 @@ userSchema.statics.findUserByCredentials = async function (email, password) {
       error.statusCode = 401; // Unauthorized
       throw error;
     }
+    const sameEmail = await this.findOne({ email });
+    if (sameEmail) {
+      const error = new Error("Email already exists");
+      error.statusCode = 409; // Conflict
+      throw error;
+    }
     return user;
   } catch (error) {
-    throw new Error(error.message);
+    if (error.statusCode) {
+      throw error; // Re-throw known errors
+    }
+    const unknownError = new Error("An unknown error occurred");
+    unknownError.statusCode = 500; // Internal Server Error
+    throw unknownError;
   }
 };
 
