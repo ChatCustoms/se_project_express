@@ -1,8 +1,8 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors");
 const mainRouter = require("./routes/index");
 const { handleError, NotFoundError } = require("./utils/errors");
-const cors = require("cors");
 
 const app = express();
 

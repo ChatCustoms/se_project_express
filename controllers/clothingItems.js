@@ -1,7 +1,6 @@
-// controllers/clothingItems.js
+const mongoose = require("mongoose");
 const clothingSchema = require("../models/clothingItems");
 const { handleError } = require("../utils/errors");
-const mongoose = require("mongoose");
 
 const getItems = (req, res) => {
   clothingSchema

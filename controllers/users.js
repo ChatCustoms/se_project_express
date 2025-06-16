@@ -1,9 +1,10 @@
-// controllers/users.js
-const User = require("../models/user");
-const { handleError } = require("../utils/errors");
-const JWT_SECRET = process.env.JWT_SECRET || "default-secret-key";
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+
+const User = require("../models/user");
+const { handleError } = require("../utils/errors");
+
+const JWT_SECRET = process.env.JWT_SECRET || "default-secret-key";
 
 const getUsers = (req, res) => {
   User.find({})
