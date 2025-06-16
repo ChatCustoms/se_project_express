@@ -42,7 +42,7 @@ const deleteItem = (req, res) => {
       if (!item) {
         return res.status(404).send({ message: "Item not found" });
       }
-      if (!item.owner.equals(req.user._id)) {
+      if (!req.user || !req.user._id || !item.owner.equals(req.user._id)) {
         return res
           .status(403)
           .send({ message: "You do not have permission to delete this item" });
