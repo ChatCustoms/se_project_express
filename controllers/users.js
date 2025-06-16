@@ -1,3 +1,4 @@
+// controllers/users.js
 const User = require("../models/user");
 const { handleError } = require("../utils/errors");
 const JWT_SECRET = process.env.JWT_SECRET || "default-secret-key";
@@ -22,15 +23,51 @@ const createUser = (req, res) => {
   User.create({ name, avatar, email, password: hashedPassword })
     .then((user) => {
       const userWithoutPassword = user.toObject();
-      delete userWithoutPassword.password; // Remove password from response
+      delete userWithoutPassword.password;
       res.status(201).send(userWithoutPassword);
     })
     .catch((error) => {
       if (error.code === 11000) {
         return res.status(409).send({ message: "Email already exists" });
       }
-      console.error(error);
+      if (error.name === "ValidationError") {
+        return res.status(400).send({ message: error.message });
+      }
+      console.error("Create user error:", error);
       handleError(error, req, res);
+    });
+};
+
+const login = (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).send({ message: "Email and password are required" });
+  }
+
+  User.findOne({ email })
+    .select("+password")
+    .then((user) => {
+      if (!user) {
+        return res.status(401).send({ message: "Incorrect email or password" });
+      }
+      return bcrypt.compare(password, user.password).then((matched) => {
+        if (!matched) {
+          return res
+            .status(401)
+            .send({ message: "Incorrect email or password" });
+        }
+        const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+          expiresIn: "7d",
+        });
+        const userObj = user.toObject();
+        delete userObj.password;
+        res.send({ token, ...userObj });
+      });
+    })
+    .catch((err) => {
+      console.error("Login error:", err);
+      handleError(err, req, res);
     });
 };
 
@@ -53,27 +90,6 @@ const getCurrentUser = (req, res) => {
       if (!user) {
         return res.status(404).send({ message: "User not found" });
       }
-      res.send(user);
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).send({ message: "Internal server error" });
-    });
-};
-
-const updateUser = (req, res) => {
-  const { name, avatar } = req.body;
-  const userId = req.user._id;
-
-  User.findByIdAndUpdate(
-    userId,
-    { name, avatar },
-    { new: true, runValidators: true }
-  )
-    .orFail(() => {
-      throw new Error("User not found");
-    })
-    .then((user) => {
       res.status(200).send(user);
     })
     .catch((error) => {
@@ -82,24 +98,22 @@ const updateUser = (req, res) => {
     });
 };
 
-const login = (req, res) => {
-  const { email, password } = req.body;
-
-  // Validate email and password
-  if (!email || !password) {
-    return res.status(400).send({ message: "Email and password are required" });
-  }
-  // Find user by credentials
-  User.findUserByCredentials(email, password)
-    .then((user) => {
-      // Generate JWT token
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
-        expiresIn: "7d",
-      });
-      res.status(200).send({ token });
-    })
+const updateUser = (req, res) => {
+  const { name, avatar } = req.body;
+  User.findByIdAndUpdate(
+    req.user._id,
+    { name, avatar },
+    { new: true, runValidators: true }
+  )
+    .orFail()
+    .then((user) => res.send(user))
     .catch((error) => {
-      console.error(error);
+      if (error.name === "ValidationError") {
+        return res.status(400).send({ message: error.message });
+      }
+      if (error.name === "CastError") {
+        return res.status(400).send({ message: "Invalid ID format" });
+      }
       handleError(error, req, res);
     });
 };
@@ -107,8 +121,8 @@ const login = (req, res) => {
 module.exports = {
   getUsers,
   createUser,
-  getUser,
-  updateUser,
   login,
+  getUser,
   getCurrentUser,
+  updateUser,
 };

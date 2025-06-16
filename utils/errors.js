@@ -1,49 +1,38 @@
-const STATUS_CODES = require("./statusCodes");
+// utils/errors.js
 
-const handleError = (err, req, res) => {
-  console.error(err);
-  if (err.name === "CastError") {
-    return res
-      .status(STATUS_CODES.BAD_REQUEST)
-      .send({ message: "Invalid ID format" });
-  }
+function handleError(err, req, res) {
   if (err.name === "ValidationError") {
-    return res
-      .status(STATUS_CODES.BAD_REQUEST)
-      .send({ message: "Invalid data provided" });
+    return res.status(400).send({ message: err.message });
   }
-  if (
-    err.name === "DocumentNotFoundError" ||
-    err.statusCode === STATUS_CODES.FORBIDDEN_REQUEST
-  ) {
-    return res
-      .status(STATUS_CODES.FORBIDDEN_REQUEST)
-      .send({ message: err.message || "Item not found" });
+
+  if (err.name === "CastError") {
+    return res.status(400).send({ message: "Invalid ID format" });
   }
-  if (err.name === "MongoServerError" && err.code === 11000) {
-    return res
-      .status(STATUS_CODES.CONFLICT)
-      .send({ message: "Conflict: Duplicate key error" });
+
+  if (err.statusCode && err.message) {
+    return res.status(err.statusCode).send({ message: err.message });
   }
-  if (err.statusCode === STATUS_CODES.FORBIDDEN) {
-    return res
-      .status(STATUS_CODES.FORBIDDEN)
-      .send({ message: err.message || "Forbidden" });
-  }
-  return res
-    .status(STATUS_CODES.INTERNAL_SERVER_ERROR)
-    .send({ message: "Internal Server Error" });
-};
+
+  console.error("Unhandled Error:", err);
+  res.status(500).send({ message: "An internal server error occurred" });
+}
 
 class NotFoundError extends Error {
   constructor(message) {
     super(message);
-    this.statusCode = STATUS_CODES.FORBIDDEN_REQUEST;
-    this.name = "NotFoundError";
+    this.statusCode = 404;
+  }
+}
+
+class UnauthorizedError extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 401;
   }
 }
 
 module.exports = {
   handleError,
   NotFoundError,
+  UnauthorizedError,
 };
