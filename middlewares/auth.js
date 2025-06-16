@@ -14,11 +14,11 @@ module.exports = (req, res, next) => {
   let payload;
 
   try {
-  payload = jwt.verify(token, JWT_SECRET);
-  req.user = payload; // Always assign payload even if no DB check
-  return next();
-} catch (err) {
-  console.error("JWT verification failed:", err.message);
-  return res.status(401).send({ message: "Authorization required" });
+    payload = jwt.verify(token, JWT_SECRET);
+    req.user = payload; // Always assign payload even if no DB check
+    return next();
+  } catch (err) {
+    console.error("JWT verification failed:", err.message);
+    return res.status(401).send({ message: "Authorization required" });
   }
 };
