@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
-const bcrypt = require("bcryptjs");
 
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true, minlength: 2, maxlength: 30 },
@@ -28,15 +27,15 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
-    select: false, // Exclude password from queries by default
+    select: false,
     minlength: 8,
   },
 });
 
 userSchema.set("toJSON", {
-  transform: function (doc, ret) {
-    ret._id = ret._id.toString(); // Convert ObjectId to string
-    delete ret.password; // Exclude password from the response
+  transform(doc, ret) {
+    ret._id = ret._id.toString();
+    delete ret.password;
     return ret;
   },
 });

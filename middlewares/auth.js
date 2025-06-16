@@ -16,14 +16,9 @@ module.exports = (req, res, next) => {
     return next();
   } catch (verifyError) {
     const decoded = jwt.decode(token);
-    if (decoded && decoded._id) {
+    if (decoded && decoded._id && process.env.NODE_ENV === "test") {
       req.user = decoded;
-
-      if (process.env.NODE_ENV === "test") {
-        return next();
-      } else {
-        return res.status(401).send({ message: "Invalid token" });
-      }
+      return next();
     }
 
     console.error("JWT verification failed:", verifyError.message);
