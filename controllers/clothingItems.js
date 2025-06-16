@@ -19,7 +19,7 @@ const createItem = (req, res) => {
   if (!name || !weather || !imageUrl) {
     return res.status(400).send({ message: "All fields are required" });
   }
-  clothingSchema
+  return clothingSchema
     .create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => {
       res.status(201).send(item);
@@ -35,7 +35,7 @@ const deleteItem = (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(itemId)) {
     return res.status(400).send({ message: "Invalid item ID" });
   }
-  clothingSchema
+  return clothingSchema
     .findById(itemId)
     .then((item) => {
       if (!item) {
@@ -55,7 +55,7 @@ const deleteItem = (req, res) => {
 };
 
 const likeItem = (req, res) => {
-  clothingSchema
+  return clothingSchema
     .findByIdAndUpdate(
       req.params.itemId,
       { $addToSet: { likes: req.user._id } },
@@ -65,7 +65,7 @@ const likeItem = (req, res) => {
       if (!item) {
         return res.status(404).send({ message: "Item not found" });
       }
-      res.send(item);
+      return res.send(item);
     })
     .catch((error) => {
       return handleError(error, req, res);
@@ -73,7 +73,7 @@ const likeItem = (req, res) => {
 };
 
 const unlikeItem = (req, res) => {
-  clothingSchema
+  return clothingSchema
     .findByIdAndUpdate(
       req.params.itemId,
       { $pull: { likes: req.user._id } },
@@ -83,7 +83,7 @@ const unlikeItem = (req, res) => {
       if (!item) {
         return res.status(404).send({ message: "Item not found" });
       }
-      res.send(item);
+      return res.send(item);
     })
     .catch((error) => {
       return handleError(error, req, res);
