@@ -10,7 +10,7 @@ const getItems = (req, res) => {
     })
     .catch((error) => {
       console.error(error);
-      handleError(error, req, res);
+      return handleError(error, req, res);
     });
 };
 
@@ -26,7 +26,7 @@ const createItem = (req, res) => {
     })
     .catch((error) => {
       console.error(error);
-      handleError(error, req, res);
+      return handleError(error, req, res);
     });
 };
 
@@ -50,7 +50,7 @@ const deleteItem = (req, res) => {
     })
     .catch((error) => {
       console.error(error);
-      handleError(error, req, res);
+      return handleError(error, req, res);
     });
 };
 
@@ -68,7 +68,7 @@ const likeItem = (req, res) => {
       res.send(item);
     })
     .catch((error) => {
-      handleError(error, req, res);
+      return handleError(error, req, res);
     });
 };
 
@@ -86,7 +86,7 @@ const unlikeItem = (req, res) => {
       res.send(item);
     })
     .catch((error) => {
-      handleError(error, req, res);
+      return handleError(error, req, res);
     });
 };
 

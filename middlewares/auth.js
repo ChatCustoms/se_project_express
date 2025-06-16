@@ -19,7 +19,6 @@ module.exports = (req, res, next) => {
     if (decoded && decoded._id) {
       req.user = decoded;
 
-      // 👇 Only allow decoded tokens during test
       if (process.env.NODE_ENV === "test") {
         return next();
       } else {

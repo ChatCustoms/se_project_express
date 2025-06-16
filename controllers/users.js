@@ -13,7 +13,7 @@ const getUsers = (req, res) => {
     })
     .catch((error) => {
       console.error(error);
-      handleError(error, req, res);
+      return handleError(error, req, res);
     });
 };
 
@@ -35,7 +35,7 @@ const createUser = (req, res) => {
         return res.status(400).send({ message: error.message });
       }
       console.error("Create user error:", error);
-      handleError(error, req, res);
+      return handleError(error, req, res);
     });
 };
 
@@ -68,7 +68,7 @@ const login = (req, res) => {
     })
     .catch((err) => {
       console.error("Login error:", err);
-      handleError(err, req, res);
+      return handleError(err, req, res);
     });
 };
 
@@ -81,7 +81,7 @@ const getUser = (req, res) => {
     })
     .catch((error) => {
       console.error(error);
-      handleError(error, req, res);
+      return handleError(error, req, res);
     });
 };
 
@@ -95,7 +95,7 @@ const getCurrentUser = (req, res) => {
     })
     .catch((error) => {
       console.error(error);
-      handleError(error, req, res);
+      return handleError(error, req, res);
     });
 };
 
@@ -115,7 +115,7 @@ const updateUser = (req, res) => {
       if (error.name === "CastError") {
         return res.status(400).send({ message: "Invalid ID format" });
       }
-      handleError(error, req, res);
+      return handleError(error, req, res);
     });
 };
 
