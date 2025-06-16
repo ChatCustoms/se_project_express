@@ -41,34 +41,48 @@ userSchema.set("toJSON", {
   },
 });
 
-userSchema.statics.findUserByCredentials = async function (email, password) {
+// userSchema.statics.findUserByCredentials = async function (email, password) {
+//   try {
+//     const user = await this.findOne({ email }).select("+password");
+//     if (!user) {
+//       const error = new Error("Invalid email or password");
+//       error.statusCode = 401; // Unauthorized
+//       throw error;
+//     }
+//     const matched = await bcrypt.compare(password, user.password);
+//     if (!matched) {
+//       const error = new Error("Invalid email or password");
+//       error.statusCode = 401; // Unauthorized
+//       throw error;
+//     }
+//     const sameEmail = await this.findOne({ email });
+//     if (sameEmail) {
+//       const error = new Error("Email already exists");
+//       error.statusCode = 409; // Conflict
+//       throw error;
+//     }
+//     return user;
+//   } catch (error) {
+//     if (error.statusCode) {
+//       throw error; // Re-throw known errors
+//     }
+//     const unknownError = new Error("An unknown error occurred");
+//     unknownError.statusCode = 500; // Internal Server Error
+//     throw unknownError;
+//   }
+// };
+
+const login = async (req, res) => {
+  const { email, password } = req.body;
+
   try {
-    const user = await this.findOne({ email }).select("+password");
-    if (!user) {
-      const error = new Error("Invalid email or password");
-      error.statusCode = 401; // Unauthorized
-      throw error;
-    }
-    const matched = await bcrypt.compare(password, user.password);
-    if (!matched) {
-      const error = new Error("Invalid email or password");
-      error.statusCode = 401; // Unauthorized
-      throw error;
-    }
-    const sameEmail = await this.findOne({ email });
-    if (sameEmail) {
-      const error = new Error("Email already exists");
-      error.statusCode = 409; // Conflict
-      throw error;
-    }
-    return user;
-  } catch (error) {
-    if (error.statusCode) {
-      throw error; // Re-throw known errors
-    }
-    const unknownError = new Error("An unknown error occurred");
-    unknownError.statusCode = 500; // Internal Server Error
-    throw unknownError;
+    const user = await User.findUserByCredentials(email, password);
+    const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: "7d" });
+    res.send({ token });
+  } catch (err) {
+    console.error(err);
+    const status = err.statusCode || 401;
+    res.status(status).send({ message: err.message || "Unauthorized" });
   }
 };
 

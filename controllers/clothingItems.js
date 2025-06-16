@@ -1,5 +1,6 @@
 const clothingSchema = require("../models/clothingItems");
 const { handleError, NotFoundError } = require("../utils/errors");
+const mongoose = require("mongoose");
 
 const getItems = (req, res) => {
   clothingSchema
@@ -36,6 +37,15 @@ const createItem = (req, res) => {
 
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(itemId)) {
+    return res.status(400).send({ message: "Invalid item ID" });
+  }
+  if (!req.user || !req.user._id) {
+    return res.status(401).send({ message: "Unauthorized: User not found" });
+  }
+  if (!itemId) {
+    return res.status(400).send({ message: "Item ID is required" });
+  }
 
   clothingSchema
     .findById(itemId)
