@@ -1,4 +1,3 @@
-// utils/errors.js
 
 function handleError(err, req, res) {
   if (err.name === "ValidationError") {
@@ -24,15 +23,9 @@ class NotFoundError extends Error {
   }
 }
 
-class UnauthorizedError extends Error {
-  constructor(message) {
-    super(message);
-    this.statusCode = 401;
-  }
-}
+
 
 module.exports = {
   handleError,
-  NotFoundError,
-  UnauthorizedError,
+  NotFoundError
 };

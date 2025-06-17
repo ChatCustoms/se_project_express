@@ -34,24 +34,11 @@ const userSchema = new mongoose.Schema({
 
 userSchema.set("toJSON", {
   transform(doc, ret) {
-    ret._id = ret._id.toString();
-    delete ret.password;
-    return ret;
+    const user = { ...ret };
+    user._id = user._id.toString();
+    delete user.password;
+    return user;
   },
 });
-
-const login = async (req, res) => {
-  const { email, password } = req.body;
-
-  try {
-    const user = await User.findUserByCredentials(email, password);
-    const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: "7d" });
-    res.send({ token });
-  } catch (err) {
-    console.error(err);
-    const status = err.statusCode || 401;
-    res.status(status).send({ message: err.message || "Unauthorized" });
-  }
-};
 
 module.exports = mongoose.model("user", userSchema);
