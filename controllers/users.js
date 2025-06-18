@@ -6,14 +6,13 @@ const { handleError } = require("../utils/errors");
 
 const JWT_SECRET = process.env.JWT_SECRET || "default-secret-key";
 
-const getUsers = (req, res) => {
-  return User.find({})
+const getUsers = (req, res) =>
+  User.find({})
     .then((users) => res.status(200).send(users))
     .catch((error) => {
       console.error(error);
       return handleError(error, req, res);
     });
-};
 
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
@@ -77,8 +76,8 @@ const getUser = (req, res) => {
     });
 };
 
-const getCurrentUser = (req, res) => {
-  return User.findById(req.user._id)
+const getCurrentUser = (req, res) =>
+  User.findById(req.user._id)
     .then((user) => {
       if (!user) {
         return res.status(404).send({ message: "User not found" });
@@ -89,7 +88,7 @@ const getCurrentUser = (req, res) => {
       console.error(error);
       return handleError(error, req, res);
     });
-};
+
 
 const updateUser = (req, res) => {
   const { name, avatar } = req.body;

@@ -54,8 +54,7 @@ const deleteItem = (req, res) => {
     });
 };
 
-const likeItem = (req, res) => {
-  return clothingSchema
+const likeItem = (req, res) => clothingSchema
     .findByIdAndUpdate(
       req.params.itemId,
       { $addToSet: { likes: req.user._id } },
@@ -67,13 +66,9 @@ const likeItem = (req, res) => {
       }
       return res.send(item);
     })
-    .catch((error) => {
-      return handleError(error, req, res);
-    });
-};
+    .catch((error) => handleError(error, req, res));
 
-const unlikeItem = (req, res) => {
-  return clothingSchema
+const unlikeItem = (req, res) => clothingSchema
     .findByIdAndUpdate(
       req.params.itemId,
       { $pull: { likes: req.user._id } },
@@ -85,10 +80,7 @@ const unlikeItem = (req, res) => {
       }
       return res.send(item);
     })
-    .catch((error) => {
-      return handleError(error, req, res);
-    });
-};
+    .catch((error) => handleError(error, req, res));
 
 module.exports = {
   getItems,
