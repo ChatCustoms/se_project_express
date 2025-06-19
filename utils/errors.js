@@ -1,10 +1,12 @@
+const { STATUS_CODES } = require("./statusCodes");
+
 function handleError(err, req, res) {
   if (err.name === "ValidationError") {
-    return res.status(400).send({ message: err.message });
+    return res.status(BAD_REQUEST).send({ message: err.message });
   }
 
   if (err.name === "CastError") {
-    return res.status(400).send({ message: "Invalid ID format" });
+    return res.status(BAD_REQUEST).send({ message: "Invalid ID format" });
   }
 
   if (err.statusCode && err.message) {
@@ -12,13 +14,15 @@ function handleError(err, req, res) {
   }
 
   console.error("Unhandled Error:", err);
-  return res.status(500).send({ message: "An internal server error occurred" });
+  return res
+    .status(INTERNAL_SERVER_ERROR)
+    .send({ message: "An internal server error occurred" });
 }
 
 class NotFoundError extends Error {
   constructor(message) {
     super(message);
-    this.statusCode = 404;
+    this.statusCode = FORBIDDEN_REQUEST;
   }
 }
 
