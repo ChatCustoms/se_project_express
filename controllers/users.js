@@ -4,7 +4,6 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/user");
 const { handleError } = require("../utils/errors");
 const {
-  STATUS_CODES,
   OK,
   CREATED,
   CONFLICT,
