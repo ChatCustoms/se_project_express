@@ -1,4 +1,8 @@
-const { STATUS_CODES } = require("./statusCodes");
+const {
+  BAD_REQUEST,
+  INTERNAL_SERVER_ERROR,
+  FORBIDDEN_REQUEST,
+} = require("./statusCodes");
 
 function handleError(err, req, res) {
   if (err.name === "ValidationError") {

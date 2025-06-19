@@ -2,7 +2,6 @@ const mongoose = require("mongoose");
 const clothingSchema = require("../models/clothingItems");
 const { handleError } = require("../utils/errors");
 const {
-  statusCodes,
   OK,
   BAD_REQUEST,
   CREATED,
