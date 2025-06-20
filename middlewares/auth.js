@@ -23,6 +23,6 @@ module.exports = (req, res, next) => {
     }
 
     console.error("JWT verification failed:", verifyError.message);
-    return res.status(FORBIDDEN).send({ message: "Authorization required" });
+    return res.status(UNAUTHORIZED).send({ message: "Authorization required" });
   }
 };

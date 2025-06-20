@@ -14,14 +14,6 @@ const {
 
 const JWT_SECRET = process.env.JWT_SECRET || "default-secret-key";
 
-const getUsers = (req, res) =>
-  User.find({})
-    .then((users) => res.status(OK).send(users))
-    .catch((error) => {
-      console.error(error);
-      return handleError(error, req, res);
-    });
-
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
   const hashedPassword = bcrypt.hashSync(password, 10);
@@ -81,17 +73,6 @@ const login = (req, res) => {
     });
 };
 
-const getUser = (req, res) => {
-  const { userId } = req.params;
-  return User.findById(userId)
-    .orFail()
-    .then((user) => res.status(OK).send(user))
-    .catch((error) => {
-      console.error(error);
-      return handleError(error, req, res);
-    });
-};
-
 const getCurrentUser = (req, res) =>
   User.findById(req.user._id)
     .then((user) => {
@@ -128,10 +109,8 @@ const updateUser = (req, res) => {
 };
 
 module.exports = {
-  getUsers,
   createUser,
   login,
-  getUser,
   getCurrentUser,
   updateUser,
 };
