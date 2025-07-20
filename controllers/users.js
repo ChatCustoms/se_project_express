@@ -4,13 +4,13 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/user");
 const { handleError } = require("../utils/errors");
 const {
-  OK,
-  CREATED,
-  CONFLICT,
-  BAD_REQUEST,
-  UNAUTHORIZED,
-  FORBIDDEN_REQUEST,
-} = require("../utils/statusCodes");
+  BadRequestError,
+  UnauthorizedError,
+  ForbiddenError,
+  NotFoundError,
+  ConflictError,
+} = require("../utils/errors/customErrors");
+const { OK, CREATED } = require("../utils/statusCodes");
 
 const JWT_SECRET = process.env.JWT_SECRET || "default-secret-key";
 
@@ -26,10 +26,10 @@ const createUser = (req, res) => {
     })
     .catch((error) => {
       if (error.code === 11000) {
-        return res.status(CONFLICT).send({ message: "Email already exists" });
+        return next(new ConflictError("Email already exists"));
       }
       if (error.name === "ValidationError") {
-        return res.status(BAD_REQUEST).send({ message: error.message });
+        return next(new BadRequestError(error.message));
       }
       console.error("Create user error:", error);
       return handleError(error, req, res);
@@ -67,10 +67,7 @@ const login = (req, res) => {
         return res.send({ token, ...userObj });
       });
     })
-    .catch((err) => {
-      console.error("Login error:", err);
-      return handleError(err, req, res);
-    });
+    .catch(next);
 };
 
 const getCurrentUser = (req, res) =>
@@ -83,10 +80,7 @@ const getCurrentUser = (req, res) =>
       }
       return res.status(OK).send(user);
     })
-    .catch((error) => {
-      console.error(error);
-      return handleError(error, req, res);
-    });
+    .catch(next);
 
 const updateUser = (req, res) => {
   const { name, avatar } = req.body;
@@ -99,12 +93,12 @@ const updateUser = (req, res) => {
     .then((user) => res.send(user))
     .catch((error) => {
       if (error.name === "ValidationError") {
-        return res.status(BAD_REQUEST).send({ message: error.message });
+        return next(new BadRequestError(error.message));
       }
       if (error.name === "CastError") {
-        return res.status(BAD_REQUEST).send({ message: "Invalid ID format" });
+        return next(new NotFoundError("User not found"));
       }
-      return handleError(error, req, res);
+      return next(error);
     });
 };
 

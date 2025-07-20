@@ -1,69 +1,75 @@
 const mongoose = require("mongoose");
 const clothingSchema = require("../models/clothingItems");
-const { handleError } = require("../utils/errors");
+
 const {
   OK,
-  BAD_REQUEST,
   CREATED,
-  FORBIDDEN_REQUEST,
+  BAD_REQUEST,
   FORBIDDEN,
+  NOT_FOUND,
 } = require("../utils/statusCodes");
 
-const getItems = (req, res) => {
+const {
+  BadRequestError,
+  ForbiddenError,
+  NotFoundError,
+} = require("../utils/errors/customErrors");
+
+// GET all items
+const getItems = (req, res, next) => {
   clothingSchema
     .find({})
-    .then((items) => {
-      res.status(OK).send(items);
-    })
-    .catch((error) => {
-      console.error(error);
-      return handleError(error, req, res);
-    });
+    .then((items) => res.status(OK).send(items))
+    .catch(next);
 };
 
-const createItem = (req, res) => {
+// POST create item
+const createItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
+
   if (!name || !weather || !imageUrl) {
-    return res.status(BAD_REQUEST).send({ message: "All fields are required" });
+    return next(new BadRequestError("All fields are required"));
   }
-  return clothingSchema
+
+  clothingSchema
     .create({ name, weather, imageUrl, owner: req.user._id })
-    .then((item) => {
-      res.status(CREATED).send(item);
-    })
-    .catch((error) => {
-      console.error(error);
-      return handleError(error, req, res);
+    .then((item) => res.status(CREATED).send(item))
+    .catch((err) => {
+      if (err.name === "ValidationError") {
+        return next(new BadRequestError(err.message));
+      }
+      return next(err);
     });
 };
 
-const deleteItem = (req, res) => {
+// DELETE item
+const deleteItem = (req, res, next) => {
   const { itemId } = req.params;
+
   if (!mongoose.Types.ObjectId.isValid(itemId)) {
-    return res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
+    return next(new BadRequestError("Invalid item ID"));
   }
-  return clothingSchema
+
+  clothingSchema
     .findById(itemId)
     .then((item) => {
       if (!item) {
-        return res
-          .status(FORBIDDEN_REQUEST)
-          .send({ message: "Item not found" });
+        throw new NotFoundError("Item not found");
       }
-      if (!req.user || !req.user._id || !item.owner.equals(req.user._id)) {
-        return res
-          .status(FORBIDDEN)
-          .send({ message: "You do not have permission to delete this item" });
+
+      if (!item.owner.equals(req.user._id)) {
+        throw new ForbiddenError(
+          "You do not have permission to delete this item"
+        );
       }
+
       return item.deleteOne().then(() => res.status(OK).send(item));
     })
-    .catch((error) => {
-      console.error(error);
-      return handleError(error, req, res);
-    });
+    .catch(next);
 };
 
-const likeItem = (req, res) =>
+// PUT like item
+const likeItem = (req, res, next) => {
   clothingSchema
     .findByIdAndUpdate(
       req.params.itemId,
@@ -72,15 +78,15 @@ const likeItem = (req, res) =>
     )
     .then((item) => {
       if (!item) {
-        return res
-          .status(FORBIDDEN_REQUEST)
-          .send({ message: "Item not found" });
+        throw new NotFoundError("Item not found");
       }
       return res.send(item);
     })
-    .catch((error) => handleError(error, req, res));
+    .catch(next);
+};
 
-const unlikeItem = (req, res) =>
+// DELETE unlike item
+const unlikeItem = (req, res, next) => {
   clothingSchema
     .findByIdAndUpdate(
       req.params.itemId,
@@ -89,13 +95,12 @@ const unlikeItem = (req, res) =>
     )
     .then((item) => {
       if (!item) {
-        return res
-          .status(FORBIDDEN_REQUEST)
-          .send({ message: "Item not found" });
+        throw new NotFoundError("Item not found");
       }
       return res.send(item);
     })
-    .catch((error) => handleError(error, req, res));
+    .catch(next);
+};
 
 module.exports = {
   getItems,

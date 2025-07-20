@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const mainRouter = require("./routes/index");
 const { handleError, NotFoundError } = require("./utils/errors");
+const errorHandler = require("./middlewares/error-handler");
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use("/", mainRouter);
 app.use((req, res) => {
   handleError(new NotFoundError("Page not found"), req, res);
 });
+app.use(errorHandler);
 
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db")
