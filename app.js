@@ -4,6 +4,7 @@ const cors = require("cors");
 const mainRouter = require("./routes/index");
 const { handleError, NotFoundError } = require("./utils/errors");
 const errorHandler = require("./middlewares/error-handler");
+const { errors } = require("celebrate");
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use("/", mainRouter);
 app.use((req, res) => {
   handleError(new NotFoundError("Page not found"), req, res);
 });
+app.use(errors());
 app.use(errorHandler);
 
 mongoose
