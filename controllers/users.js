@@ -14,7 +14,7 @@ const { OK, CREATED } = require("../utils/statusCodes");
 
 const JWT_SECRET = process.env.JWT_SECRET || "default-secret-key";
 
-const createUser = (req, res) => {
+const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
   const hashedPassword = bcrypt.hashSync(password, 10);
 
@@ -31,12 +31,12 @@ const createUser = (req, res) => {
       if (error.name === "ValidationError") {
         return next(new BadRequestError(error.message));
       }
-      console.error("Create user error:", error);
-      return handleError(error, req, res);
+      console.error("Create user error:", error.message, error.stack);
+      return next(error);
     });
 };
 
-const login = (req, res) => {
+const login = (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -53,24 +53,28 @@ const login = (req, res) => {
           .status(UNAUTHORIZED)
           .send({ message: "Incorrect email or password" });
       }
+
       return bcrypt.compare(password, user.password).then((matched) => {
         if (!matched) {
           return res
             .status(UNAUTHORIZED)
             .send({ message: "Incorrect email or password" });
         }
+
         const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
           expiresIn: "7d",
         });
+
         const userObj = user.toObject();
         delete userObj.password;
+
         return res.send({ token, ...userObj });
       });
     })
     .catch(next);
 };
 
-const getCurrentUser = (req, res) =>
+const getCurrentUser = (req, res, next) =>
   User.findById(req.user._id)
     .then((user) => {
       if (!user) {
@@ -82,7 +86,7 @@ const getCurrentUser = (req, res) =>
     })
     .catch(next);
 
-const updateUser = (req, res) => {
+const updateUser = (req, res, next) => {
   const { name, avatar } = req.body;
   return User.findByIdAndUpdate(
     req.user._id,

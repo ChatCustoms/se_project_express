@@ -2,6 +2,7 @@ const {
   BAD_REQUEST,
   INTERNAL_SERVER_ERROR,
   FORBIDDEN_REQUEST,
+  NOT_FOUND,
 } = require("./statusCodes");
 
 function handleError(err, req, res) {
@@ -26,7 +27,7 @@ function handleError(err, req, res) {
 class NotFoundError extends Error {
   constructor(message) {
     super(message);
-    this.statusCode = FORBIDDEN_REQUEST;
+    this.statusCode = NOT_FOUND;
   }
 }
 

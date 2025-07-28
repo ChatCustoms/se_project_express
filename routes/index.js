@@ -10,8 +10,7 @@ const { validateUser, validateLogin } = require("../middlewares/validation");
 router.post("/signin", validateLogin, login);
 router.post("/signup", validateUser, createUser);
 
-router.use(auth);
-router.use("/items", auth, clothingRouter);
+router.use("/items", clothingRouter);
 router.use("/users", auth, userRouter);
 
 module.exports = router;
