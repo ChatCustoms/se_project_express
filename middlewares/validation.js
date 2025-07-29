@@ -19,6 +19,7 @@ const validateCardBody = celebrate({
       "string.empty": 'The "imageUrl" field must be filled in',
       "string.uri": 'The "imageUrl" field must be a valid URL',
     }),
+    weather: Joi.string().valid("hot", "warm", "cold").required(),
   }),
 });
 
@@ -80,7 +81,7 @@ const validateUserUpdate = celebrate({
 
 const validateId = celebrate({
   params: Joi.object().keys({
-    id: Joi.string().required().hex().length(24).messages({
+    itemId: Joi.string().required().hex().length(24).messages({
       "string.hex": "The ID must be a valid hexadecimal string",
       "string.length": "The ID must be 24 characters long",
       "any.required": "ID is required",

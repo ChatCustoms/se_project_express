@@ -1,12 +1,13 @@
 const jwt = require("jsonwebtoken");
+const { logger } = require("express-winston");
 const { JWT_SECRET = "default-secret-key" } = require("../utils/config");
-const { UNAUTHORIZED } = require("../utils/statusCodes");
+const { UnauthorizedError } = require("../utils/errors");
 
 module.exports = (req, res, next) => {
   const { authorization } = req.headers;
 
   if (!authorization || !authorization.startsWith("Bearer ")) {
-    return res.status(UNAUTHORIZED).send({ message: "Authorization required" });
+    return next;
   }
 
   const token = authorization.replace("Bearer ", "");
@@ -21,8 +22,7 @@ module.exports = (req, res, next) => {
       req.user = decoded;
       return next();
     }
-
-    console.error("JWT verification failed:", verifyError.message);
-    return res.status(UNAUTHORIZED).send({ message: "Authorization required" });
+    logger.error("Authentication error:", verifyError.message);
+    return next(new UnauthorizedError("Authorization required"));
   }
 };

@@ -2,10 +2,11 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
-const mainRouter = require("./routes/index");
-const { handleError, NotFoundError } = require("./utils/errors");
-const errorHandler = require("./middlewares/error-handler");
 const { errors } = require("celebrate");
+const { logger } = require("./middlewares/logger");
+const mainRouter = require("./routes/index");
+const { NotFoundError } = require("./utils/errors");
+const errorHandler = require("./middlewares/error-handler");
 const { requestLogger, errorLogger } = require("./middlewares/logger");
 
 const app = express();
@@ -25,20 +26,21 @@ app.get("/crash-test", () => {
 
 app.use("/", mainRouter);
 
-app.use(errorLogger);
-app.use((req, res) => {
-  handleError(new NotFoundError("Page not found"), req, res);
+app.use((req, res, next) => {
+  next(new NotFoundError("Resource not found"));
 });
+
+app.use(errorLogger);
 app.use(errors());
 app.use(errorHandler);
 
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db")
   .then(() => {
-    console.log("Connected to DB");
+    logger.info("Connected to MongoDB");
   })
-  .catch(console.error);
+  .catch(logger.error("Failed to connect to MongoDB:"));
 
 app.listen(PORT, () => {
-  console.log(`Listening on port ${PORT}`);
+  logger.info(`Server is running on port ${PORT}`);
 });

@@ -1,19 +1,13 @@
 const mongoose = require("mongoose");
 const clothingSchema = require("../models/clothingItems");
 
-const {
-  OK,
-  CREATED,
-  BAD_REQUEST,
-  FORBIDDEN,
-  NOT_FOUND,
-} = require("../utils/statusCodes");
+const { OK, CREATED } = require("../utils/statusCodes");
 
 const {
   BadRequestError,
   ForbiddenError,
   NotFoundError,
-} = require("../utils/errors/customErrors");
+} = require("../utils/errors");
 
 // GET all items
 const getItems = (req, res, next) => {
@@ -28,10 +22,11 @@ const createItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
 
   if (!name || !weather || !imageUrl) {
-    return next(new BadRequestError("All fields are required"));
+    next(new BadRequestError("All fields are required"));
+    return null;
   }
 
-  clothingSchema
+  return clothingSchema
     .create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => res.status(CREATED).send(item))
     .catch((err) => {
@@ -50,16 +45,16 @@ const deleteItem = (req, res, next) => {
     return next(new BadRequestError("Invalid item ID"));
   }
 
-  clothingSchema
+  return clothingSchema
     .findById(itemId)
     .then((item) => {
       if (!item) {
-        throw new NotFoundError("Item not found");
+        return next(new NotFoundError("Item not found"));
       }
 
       if (!item.owner.equals(req.user._id)) {
-        throw new ForbiddenError(
-          "You do not have permission to delete this item"
+        return next(
+          new ForbiddenError("You do not have permission to delete this item")
         );
       }
 
@@ -78,7 +73,7 @@ const likeItem = (req, res, next) => {
     )
     .then((item) => {
       if (!item) {
-        throw new NotFoundError("Item not found");
+        return next(new NotFoundError("Item not found"));
       }
       return res.send(item);
     })
@@ -95,7 +90,7 @@ const unlikeItem = (req, res, next) => {
     )
     .then((item) => {
       if (!item) {
-        throw new NotFoundError("Item not found");
+        return next(new NotFoundError("Item not found"));
       }
       return res.send(item);
     })
