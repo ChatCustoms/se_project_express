@@ -5,7 +5,7 @@ require("dotenv").config();
 const { errors } = require("celebrate");
 const { logger } = require("./middlewares/logger");
 const mainRouter = require("./routes/index");
-const { NotFoundError } = require("./utils/errors");
+const { NotFoundError } = require("./utils/errors/NotFoundError");
 const errorHandler = require("./middlewares/error-handler");
 const { requestLogger, errorLogger } = require("./middlewares/logger");
 

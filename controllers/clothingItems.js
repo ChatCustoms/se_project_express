@@ -3,11 +3,9 @@ const clothingSchema = require("../models/clothingItems");
 
 const { OK, CREATED } = require("../utils/statusCodes");
 
-const {
-  BadRequestError,
-  ForbiddenError,
-  NotFoundError,
-} = require("../utils/errors");
+const BadRequestError = require("../utils/errors/BadRequestError");
+const NotFoundError = require("../utils/errors/NotFoundError");
+const ForbiddenError = require("../utils/errors/ForbiddenError");
 
 // GET all items
 const getItems = (req, res, next) => {

@@ -1,13 +1,12 @@
 const jwt = require("jsonwebtoken");
-const { logger } = require("express-winston");
-const { JWT_SECRET = "default-secret-key" } = require("../utils/config");
-const { UnauthorizedError } = require("../utils/errors");
+const { JWT_SECRET } = require("../utils/config");
+const { UnauthorizedError } = require("../utils/errors/UnauthorizedError");
 
 module.exports = (req, res, next) => {
   const { authorization } = req.headers;
 
   if (!authorization || !authorization.startsWith("Bearer ")) {
-    return next;
+    return next(new UnauthorizedError("Authorization required"));
   }
 
   const token = authorization.replace("Bearer ", "");
@@ -22,7 +21,6 @@ module.exports = (req, res, next) => {
       req.user = decoded;
       return next();
     }
-    logger.error("Authentication error:", verifyError.message);
     return next(new UnauthorizedError("Authorization required"));
   }
 };
